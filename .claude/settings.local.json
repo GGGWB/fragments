@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm list *)",
+      "Read(//Users/gwb/.nvm/versions/node/v22.22.0/lib/node_modules/**)",
+      "Bash(node server.js)"
+    ]
+  }
+}

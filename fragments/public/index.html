@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>碎片</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='16' fill='%23f5f0e8'/><text x='50' y='72' font-size='60' text-anchor='middle' fill='%232c2416' font-family='serif'>碎</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --paper: #f5f0e8;
+    --paper-dark: #ebe4d6;
+    --ink: #2c2416;
+    --ink-light: #6b5d4d;
+    --ink-faint: #a89880;
+    --accent: #8b6914;
+    --accent-light: #c4a35a;
+    --shadow: rgba(44, 36, 22, 0.08);
+    --red: #9e3a26;
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    height: 100%;
+  }
+
+  body {
+    font-family: 'Noto Serif SC', 'Songti SC', 'SimSun', Georgia, serif;
+    background-color: var(--paper);
+    color: var(--ink);
+    height: 100%;
+    line-height: 1.8;
+    display: flex;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(139,105,20,0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(139,105,20,0.02) 0%, transparent 50%),
+      url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  }
+
+  ::selection {
+    background: var(--accent-light);
+    color: var(--paper);
+  }
+
+  /* ── 左侧输入面板 ── */
+  .left-panel {
+    flex-shrink: 0;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    padding: 2.5rem 2rem;
+    border-right: 1px solid rgba(168,152,128,0.15);
+  }
+
+  header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(168,152,128,0.15);
+    position: relative;
+  }
+
+  header::after {
+    content: '◆';
+    position: absolute;
+    bottom: -0.6em;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--paper);
+    padding: 0 1em;
+    color: var(--ink-faint);
+    font-size: 0.6rem;
+    letter-spacing: 0.5em;
+  }
+
+  h1 {
+    font-weight: 300;
+    font-size: 1.6rem;
+    letter-spacing: 0.3em;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+    text-align: center;
+  }
+
+  .subtitle {
+    font-size: 0.75rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.2em;
+    font-weight: 300;
+    text-align: center;
+  }
+
+  .input-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .input-wrapper {
+    flex: 1;
+    position: relative;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid rgba(168,152,128,0.2);
+    border-radius: 4px;
+    box-shadow: 0 1px 6px rgba(44,36,22,0.03);
+    transition: border-color 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .input-wrapper:focus-within {
+    border-color: rgba(139,105,20,0.3);
+    box-shadow: 0 2px 16px rgba(44,36,22,0.06);
+  }
+
+  textarea {
+    flex: 1;
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.8;
+    color: var(--ink);
+    resize: none;
+    outline: none;
+    min-height: 120px;
+  }
+
+  textarea::placeholder {
+    color: var(--ink-faint);
+    font-weight: 300;
+  }
+
+  .input-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem 0.7rem;
+  }
+
+  .input-hint {
+    font-size: 0.65rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+  }
+
+  .btn-submit {
+    font-family: inherit;
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+    padding: 0.5rem 1.6rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 400;
+  }
+
+  .btn-submit:hover {
+    background: var(--accent);
+  }
+
+  .btn-submit:active {
+    transform: scale(0.98);
+  }
+
+  .left-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(168,152,128,0.12);
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.12em;
+    opacity: 0.5;
+  }
+
+  /* ── 右侧展示区 ── */
+  .right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .display-header {
+    flex-shrink: 0;
+    padding: 1.5rem 2rem 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .display-title {
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+    font-weight: 300;
+  }
+
+  .stats {
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.08em;
+  }
+
+  .display-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 2rem 2rem;
+  }
+
+  .display-area::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .display-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .display-area::-webkit-scrollbar-thumb {
+    background: rgba(168,152,128,0.2);
+    border-radius: 2px;
+  }
+
+  /* ── 碎片卡片 ── */
+  .fragments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .fragment-card {
+    position: relative;
+    background: rgba(255,255,255,0.4);
+    border: 1px solid rgba(168,152,128,0.12);
+    padding: 1.2rem 1.5rem;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(44,36,22,0.02);
+    transition: all 0.35s ease;
+    animation: fadeUp 0.4s ease both;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .fragment-card:hover {
+    border-color: rgba(168,152,128,0.25);
+    box-shadow: 0 3px 16px rgba(44,36,22,0.05);
+  }
+
+  .fragment-card:nth-child(odd) { transform: rotate(-0.15deg); }
+  .fragment-card:nth-child(even) { transform: rotate(0.1deg); }
+  .fragment-card:nth-child(3n) { transform: rotate(-0.08deg); }
+  .fragment-card:hover { transform: rotate(0deg) !important; }
+
+  /* ── 颜色圆点 ── */
+  .color-dots {
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .fragment-card:hover .color-dots { opacity: 0.6; }
+  .color-dots:hover { opacity: 1 !important; }
+
+  .color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(168,152,128,0.3);
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .color-dot:hover { transform: scale(1.4); }
+  .color-dot.active { border-color: var(--ink-light); }
+
+  /* ── 拖拽状态 ── */
+  .fragment-card.dragging {
+    opacity: 0.85;
+    box-shadow: 0 8px 32px rgba(44,36,22,0.15);
+    transform: rotate(0deg) scale(1.02) !important;
+    transition: none;
+    cursor: grabbing;
+  }
+
+  .fragment-card.drop-before {
+    margin-top: 2.2rem;
+    transition: margin 0.2s ease;
+  }
+
+  .fragment-card.drop-after {
+    margin-bottom: 2.2rem;
+    transition: margin 0.2s ease;
+  }
+
+  .fragment-content {
+    font-size: 0.92rem;
+    line-height: 1.9;
+    color: var(--ink);
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 0.5rem;
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  .fragment-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.68rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+  }
+
+  .fragment-time {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .fragment-actions {
+    display: flex;
+    gap: 0.15rem;
+    align-items: center;
+    position: relative;
+  }
+
+  .btn-copy {
+    opacity: 0;
+    font-family: inherit;
+    font-size: 0.68rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    transition: opacity 0.3s, background 0.2s;
+    padding: 0.15rem 0.45rem;
+    border-radius: 3px;
+  }
+
+  .btn-edit, .btn-save {
+    opacity: 0;
+    font-family: inherit;
+    font-size: 0.68rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    transition: opacity 0.3s, background 0.2s;
+    padding: 0.15rem 0.45rem;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  .btn-edit:hover, .btn-save:hover { background: rgba(139,105,20,0.08); }
+
+  .fragment-card:hover .btn-edit {
+    opacity: 0.6;
+  }
+
+  .fragment-card.editing .btn-save {
+    opacity: 0.6;
+  }
+
+  .btn-edit:hover, .btn-save:hover {
+    opacity: 1 !important;
+  }
+
+  /* ── 编辑态 ── */
+  .fragment-card.editing {
+    cursor: default;
+    border-color: rgba(139,105,20,0.25);
+    box-shadow: 0 2px 12px rgba(44,36,22,0.06);
+    transform: rotate(0deg) !important;
+  }
+
+  .edit-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid rgba(139,105,20,0.2);
+    border-radius: 4px;
+    background: rgba(255,255,255,0.6);
+    font-family: inherit;
+    font-size: 0.92rem;
+    line-height: 1.9;
+    color: var(--ink);
+    resize: vertical;
+    outline: none;
+    margin-bottom: 0.5rem;
+    transition: border-color 0.2s;
+  }
+
+  .edit-textarea:focus {
+    border-color: rgba(139,105,20,0.4);
+  }
+
+  /* ── 下拉菜单 ── */
+  .dropdown-trigger {
+    opacity: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.15rem 0.2rem;
+    font-size: 0.5rem;
+    color: var(--ink-faint);
+    transition: opacity 0.3s, color 0.2s;
+    line-height: 1;
+    font-family: inherit;
+  }
+
+  .fragment-card:hover .dropdown-trigger {
+    opacity: 0.5;
+  }
+
+  .dropdown-trigger:hover {
+    opacity: 1 !important;
+    color: var(--ink-light);
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: var(--paper);
+    border: 1px solid rgba(168,152,128,0.2);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(44,36,22,0.1);
+    min-width: 64px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px) scale(0.98);
+    transition: all 0.2s ease;
+    z-index: 10;
+    overflow: hidden;
+  }
+
+  .dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  .dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 0.4rem 0.8rem;
+    font-family: inherit;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+    color: var(--red);
+  }
+
+  .dropdown-item:hover {
+    background: rgba(158,58,38,0.06);
+  }
+
+  /* ── 空状态 ── */
+  .empty-state {
+    text-align: center;
+    padding: 6rem 1rem;
+    color: var(--ink-faint);
+  }
+
+  .empty-state .icon {
+    font-size: 1.6rem;
+    margin-bottom: 0.8rem;
+    opacity: 0.25;
+  }
+
+  .empty-state p {
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    font-weight: 300;
+  }
+
+  /* ── 动画 ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; }
+  }
+
+  .fragment-card.removing {
+    animation: fadeOut 0.25s ease forwards;
+  }
+
+  @keyframes fadeOut {
+    to { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  }
+
+  /* ── toast ── */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.5rem 1.4rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    border-radius: 4px;
+    opacity: 0;
+    transition: all 0.35s ease;
+    pointer-events: none;
+    z-index: 100;
+    font-family: inherit;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── 回收站按钮 ── */
+  .trash-btn {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(44,36,22,0.15);
+    transition: all 0.3s ease;
+    opacity: 0.5;
+    z-index: 50;
+  }
+
+  .trash-btn:hover {
+    opacity: 1;
+    transform: scale(1.08);
+    background: var(--accent);
+  }
+
+  .trash-btn .badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--red);
+    color: var(--paper);
+    font-size: 0.6rem;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit;
+    letter-spacing: 0;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.25s ease;
+  }
+
+  .trash-btn .badge.show {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* ── 回收站遮罩 ── */
+  .trash-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(44,36,22,0.25);
+    z-index: 90;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .trash-overlay.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* ── 回收站面板 ── */
+  .trash-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 380px;
+    max-width: 90vw;
+    height: 100%;
+    background: var(--paper);
+    z-index: 95;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -4px 0 24px rgba(44,36,22,0.1);
+  }
+
+  .trash-panel.show {
+    transform: translateX(0);
+  }
+
+  .trash-header {
+    flex-shrink: 0;
+    padding: 1.8rem 1.5rem 1.2rem;
+    border-bottom: 1px solid rgba(168,152,128,0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .trash-title {
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    font-weight: 300;
+    color: var(--ink);
+  }
+
+  .trash-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--ink-faint);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .trash-close:hover {
+    color: var(--ink);
+    background: rgba(168,152,128,0.1);
+  }
+
+  .trash-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.5rem;
+  }
+
+  .trash-body::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .trash-body::-webkit-scrollbar-thumb {
+    background: rgba(168,152,128,0.2);
+    border-radius: 2px;
+  }
+
+  /* ── 回收站条目 ── */
+  .trash-item {
+    background: rgba(255,255,255,0.35);
+    border: 1px solid rgba(168,152,128,0.1);
+    border-radius: 4px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.7rem;
+    transition: all 0.2s;
+  }
+
+  .trash-item:hover {
+    background: rgba(255,255,255,0.55);
+    border-color: rgba(168,152,128,0.2);
+  }
+
+  .trash-item-content {
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: var(--ink);
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 0.6rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .trash-item-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.65rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.05em;
+  }
+
+  .trash-item-expire {
+    color: var(--red);
+    opacity: 0.7;
+  }
+
+  .btn-restore {
+    font-family: inherit;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    background: none;
+    border: 1px solid rgba(139,105,20,0.25);
+    color: var(--accent);
+    padding: 0.25rem 0.7rem;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-restore:hover {
+    background: rgba(139,105,20,0.08);
+    border-color: rgba(139,105,20,0.4);
+  }
+
+  /* ── 回收站底部 ── */
+  .trash-footer {
+    flex-shrink: 0;
+    padding: 1rem 1.5rem 1.5rem;
+    border-top: 1px solid rgba(168,152,128,0.12);
+  }
+
+  .btn-empty-trash {
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    padding: 0.6rem 1rem;
+    background: none;
+    border: 1px solid var(--red);
+    color: var(--red);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.25s;
+    opacity: 0.7;
+  }
+
+  .btn-empty-trash:hover {
+    background: var(--red);
+    color: var(--paper);
+    opacity: 1;
+  }
+
+  .trash-empty-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--ink-faint);
+  }
+
+  .trash-empty-state .icon {
+    font-size: 1.4rem;
+    margin-bottom: 0.6rem;
+    opacity: 0.2;
+  }
+
+  .trash-empty-state p {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    font-weight: 300;
+  }
+
+  /* ── 确认弹窗 ── */
+  .confirm-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s;
+  }
+
+  .confirm-dialog.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .confirm-dialog .backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(44,36,22,0.3);
+  }
+
+  .confirm-dialog .dialog-box {
+    position: relative;
+    background: var(--paper);
+    border: 1px solid rgba(168,152,128,0.2);
+    border-radius: 6px;
+    padding: 2rem 2.2rem;
+    box-shadow: 0 8px 32px rgba(44,36,22,0.15);
+    text-align: center;
+    max-width: 320px;
+    transform: scale(0.95);
+    transition: transform 0.2s;
+  }
+
+  .confirm-dialog.show .dialog-box {
+    transform: scale(1);
+  }
+
+  .confirm-dialog p {
+    font-size: 0.85rem;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
+    line-height: 1.8;
+  }
+
+  .confirm-actions {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+  }
+
+  .btn-confirm-cancel {
+    font-family: inherit;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    padding: 0.45rem 1.4rem;
+    background: none;
+    border: 1px solid rgba(168,152,128,0.3);
+    color: var(--ink-light);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-confirm-cancel:hover {
+    border-color: rgba(168,152,128,0.5);
+    background: rgba(168,152,128,0.05);
+  }
+
+  .btn-confirm-ok {
+    font-family: inherit;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    padding: 0.45rem 1.4rem;
+    background: var(--red);
+    border: none;
+    color: var(--paper);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-confirm-ok:hover {
+    opacity: 0.85;
+  }
+
+  /* ── 响应式：小屏上下布局 ── */
+  @media (max-width: 768px) {
+    body {
+      flex-direction: column;
+    }
+
+    .left-panel {
+      width: 100%;
+      padding: 1.5rem 1.2rem;
+      border-right: none;
+      border-bottom: 1px solid rgba(168,152,128,0.15);
+      flex: 0 0 auto;
+    }
+
+    .input-section {
+      min-height: 0;
+    }
+
+    textarea {
+      min-height: 60px;
+    }
+
+    .left-footer {
+      display: none;
+    }
+
+    .right-panel {
+      flex: 1;
+      min-height: 0;
+    }
+
+    .display-header {
+      padding: 1rem 1.2rem 0.5rem;
+    }
+
+    .display-area {
+      padding: 0 1.2rem 2rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="left-panel">
+  <header>
+    <h1>碎 片</h1>
+    <p class="subtitle">记录此刻所想</p>
+  </header>
+
+  <div class="input-section">
+    <div class="input-wrapper">
+      <textarea id="input" placeholder="写下什么..." maxlength="2000" autofocus></textarea>
+      <div class="input-footer">
+        <span class="input-hint">⌘ + Enter 提交</span>
+        <button class="btn-submit" id="submitBtn">记 下</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="left-footer">碎片 · 用文字留住时光</div>
+</div>
+
+<div class="right-panel">
+  <div class="display-header">
+    <span class="display-title">记 录</span>
+    <span class="stats" id="stats"></span>
+  </div>
+  <div class="display-area" id="displayArea">
+    <div class="fragments-list" id="list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<button class="trash-btn" id="trashBtn" title="回收站">
+  <span>♻</span>
+  <span class="badge" id="trashBadge">0</span>
+</button>
+
+<div class="trash-overlay" id="trashOverlay"></div>
+
+<div class="trash-panel" id="trashPanel">
+  <div class="trash-header">
+    <span class="trash-title">回 收 站</span>
+    <button class="trash-close" id="trashClose">✕</button>
+  </div>
+  <div class="trash-body" id="trashBody"></div>
+  <div class="trash-footer">
+    <button class="btn-empty-trash" id="btnEmptyTrash">清空回收站</button>
+  </div>
+</div>
+
+<div class="confirm-dialog" id="confirmDialog">
+  <div class="backdrop"></div>
+  <div class="dialog-box">
+    <p>确定要清空回收站吗？<br>此操作不可撤销</p>
+    <div class="confirm-actions">
+      <button class="btn-confirm-cancel" id="confirmCancel">取消</button>
+      <button class="btn-confirm-ok" id="confirmOk">确定清空</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const input = document.getElementById('input');
+const submitBtn = document.getElementById('submitBtn');
+const listEl = document.getElementById('list');
+const statsEl = document.getElementById('stats');
+const toastEl = document.getElementById('toast');
+const displayArea = document.getElementById('displayArea');
+
+input.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault();
+    submit();
+  }
+});
+
+submitBtn.addEventListener('click', submit);
+
+async function submit() {
+  const content = input.value.trim();
+  if (!content) return;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '...';
+
+  try {
+    const res = await fetch('/api/fragments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+
+    if (!res.ok) throw new Error('提交失败');
+
+    const fragment = await res.json();
+    input.value = '';
+
+    const card = createCard(fragment);
+    const empty = listEl.querySelector('.empty-state');
+    if (empty) empty.remove();
+    listEl.insertBefore(card, listEl.firstChild);
+    updateCount();
+    showToast('已记录');
+    displayArea.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (err) {
+    showToast('记录失败');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '记 下';
+  }
+}
+
+function createCard(fragment) {
+  const card = document.createElement('div');
+  card.className = 'fragment-card';
+  card.dataset.id = fragment.id;
+  card.style.animationDelay = '0s';
+  if (fragment.color) card.style.backgroundColor = fragment.color;
+
+  const dotsHtml = COLORS.map(c =>
+    `<button class="color-dot${fragment.color === c.bg ? ' active' : ''}" data-color="${c.bg}" style="background:${c.dot}" title="${c.name}"></button>`
+  ).join('');
+
+  card.innerHTML = `
+    <div class="color-dots">${dotsHtml}</div>
+    <div class="fragment-content">${escapeHtml(fragment.content)}</div>
+    <div class="fragment-meta">
+      <span class="fragment-time">${formatTime(fragment.created_at)}</span>
+      <div class="fragment-actions">
+        <button class="btn-edit" onclick="editFragment(${fragment.id}, this)">编辑</button>
+        <button class="dropdown-trigger" onclick="toggleDropdown(event, this)">▾</button>
+        <div class="dropdown-menu">
+          <button class="dropdown-item" onclick="deleteFragment(${fragment.id}, this)">删除</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  return card;
+}
+
+async function deleteFragment(id, btn) {
+  const card = btn.closest('.fragment-card');
+  closeAllDropdowns();
+  if (card.classList.contains('editing')) return;
+  card.classList.add('removing');
+  await fetch(`/api/fragments/${id}`, { method: 'DELETE' });
+  setTimeout(() => {
+    card.remove();
+    updateCount();
+    loadTrashCount();
+    showToast('已移入回收站');
+  }, 300);
+}
+
+// ── 编辑碎片 ──
+
+function editFragment(id, btn) {
+  const card = btn.closest('.fragment-card');
+  if (card.classList.contains('editing')) return;
+  card.classList.add('editing');
+
+  const contentEl = card.querySelector('.fragment-content');
+  const originalText = contentEl.textContent;
+
+  const textarea = document.createElement('textarea');
+  textarea.className = 'edit-textarea';
+  textarea.value = originalText;
+  textarea.maxLength = 2000;
+  contentEl.replaceWith(textarea);
+  textarea.focus();
+
+  // 按钮切换
+  btn.textContent = '保存';
+  btn.className = 'btn-save';
+  btn.onclick = () => saveFragment(id, card, textarea);
+
+  const dropdown = card.querySelector('.dropdown-trigger');
+  dropdown.textContent = '✕';
+  dropdown.style.opacity = '0.6';
+  dropdown.onclick = (e) => { e.stopPropagation(); cancelEdit(card, textarea, originalText); };
+
+  // 隐藏删除菜单
+  const menu = card.querySelector('.dropdown-menu');
+  menu.style.display = 'none';
+}
+
+async function saveFragment(id, card, textarea) {
+  const content = textarea.value.trim();
+  if (!content) { showToast('内容不能为空'); return; }
+
+  try {
+    const res = await fetch(`/api/fragments/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content })
+    });
+    if (!res.ok) throw new Error();
+    const fragment = await res.json();
+
+    // 重建卡片内容
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'fragment-content';
+    contentDiv.textContent = fragment.content;
+    textarea.replaceWith(contentDiv);
+
+    card.querySelector('.fragment-time').textContent = formatTime(fragment.created_at);
+
+    resetEditState(card);
+    showToast('已保存');
+  } catch {
+    showToast('保存失败');
+  }
+}
+
+function cancelEdit(card, textarea, originalText) {
+  const contentDiv = document.createElement('div');
+  contentDiv.className = 'fragment-content';
+  contentDiv.textContent = originalText;
+  textarea.replaceWith(contentDiv);
+
+  resetEditState(card);
+}
+
+function resetEditState(card) {
+  card.classList.remove('editing');
+
+  const editBtn = card.querySelector('.btn-save');
+  if (editBtn) {
+    editBtn.textContent = '编辑';
+    editBtn.className = 'btn-edit';
+    editBtn.onclick = () => editFragment(Number(card.dataset.id), editBtn);
+  }
+
+  const dropdown = card.querySelector('.dropdown-trigger');
+  dropdown.textContent = '▾';
+  dropdown.style.opacity = '';
+  dropdown.onclick = (e) => toggleDropdown(e, dropdown);
+
+  const menu = card.querySelector('.dropdown-menu');
+  menu.style.display = '';
+}
+
+function toggleDropdown(e, trigger) {
+  e.stopPropagation();
+  const menu = trigger.nextElementSibling;
+  const isOpen = menu.classList.contains('show');
+  closeAllDropdowns();
+  if (!isOpen) {
+    menu.classList.add('show');
+  }
+}
+
+function closeAllDropdowns() {
+  document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+}
+
+document.addEventListener('click', closeAllDropdowns);
+
+// ── 点击卡片复制内容 ──
+document.getElementById('list').addEventListener('click', async (e) => {
+  const card = e.target.closest('.fragment-card');
+  if (!card || card.classList.contains('editing')) return;
+  // 点击操作区域不触发复制
+  if (e.target.closest('.fragment-actions')) return;
+
+  const content = card.querySelector('.fragment-content');
+  if (!content) return;
+
+  try {
+    await navigator.clipboard.writeText(content.textContent);
+    showToast('已复制');
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = content.textContent;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('已复制');
+  }
+});
+
+function updateCount() {
+  const cards = listEl.querySelectorAll('.fragment-card');
+  const count = cards.length;
+  if (count === 0) {
+    statsEl.textContent = '';
+    if (!listEl.querySelector('.empty-state')) {
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">◇</div>
+          <p>还没有碎片，写下第一句吧</p>
+        </div>
+      `;
+    }
+  } else {
+    statsEl.textContent = `${count} 条`;
+  }
+}
+
+function formatTime(datetime) {
+  if (!datetime) return '';
+  const d = new Date(datetime.replace(' ', 'T'));
+  const now = new Date();
+  const diff = now - d;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+
+  if (minutes < 1) return '刚刚';
+  if (minutes < 60) return `${minutes} 分钟前`;
+  if (hours < 24) return `${hours} 小时前`;
+
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const h = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+
+  if (y === now.getFullYear()) return `${m}月${day}日 ${h}:${min}`;
+  return `${y}年${m}月${day}日 ${h}:${min}`;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function escapeAttr(text) {
+  return text.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  setTimeout(() => toastEl.classList.remove('show'), 1500);
+}
+
+async function loadFragments() {
+  try {
+    const res = await fetch('/api/fragments');
+    const fragments = await res.json();
+
+    if (fragments.length === 0) {
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">◇</div>
+          <p>还没有碎片，写下第一句吧</p>
+        </div>
+      `;
+      return;
+    }
+
+    fragments.forEach((f, i) => {
+      const card = createCard(f);
+      card.style.animationDelay = `${i * 0.04}s`;
+      listEl.appendChild(card);
+    });
+
+    statsEl.textContent = `${fragments.length} 条`;
+  } catch (err) {
+    showToast('加载失败');
+  }
+}
+
+loadFragments();
+loadTrashCount();
+
+// ── 颜色配置 ──
+const COLORS = [
+  { name: '米白', dot: '#e0d5c0', bg: 'rgba(245,240,232,0.8)' },
+  { name: '暖黄', dot: '#d4b86e', bg: 'rgba(236,218,170,0.45)' },
+  { name: '淡绿', dot: '#8ca57a', bg: 'rgba(181,196,168,0.4)' },
+  { name: '淡紫', dot: '#a590a8', bg: 'rgba(197,179,200,0.4)' }
+];
+
+// ── 颜色圆点点击 ──
+document.getElementById('list').addEventListener('click', (e) => {
+  const dot = e.target.closest('.color-dot');
+  if (!dot) return;
+  e.stopPropagation();
+
+  const card = dot.closest('.fragment-card');
+  const id = Number(card.dataset.id);
+  const color = dot.dataset.color;
+
+  // 同步 active 状态
+  card.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+  dot.classList.add('active');
+
+  // 应用颜色（相同颜色再次点击清空）
+  const prev = card.style.backgroundColor;
+  const isSame = prev && COLORS.some(c => c.bg === color && prev.replace(/\s/g,'') === c.bg.replace(/\s/g,''));
+  const newColor = isSame ? '' : color;
+  card.style.backgroundColor = newColor || '';
+  if (!newColor) dot.classList.remove('active');
+
+  fetch(`/api/fragments/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ color: newColor })
+  });
+});
+
+// ── 拖拽排序 ──
+const dragState = { el: null, timer: null, startY: 0 };
+
+listEl.addEventListener('mousedown', (e) => {
+  const card = e.target.closest('.fragment-card');
+  if (!card || card.classList.contains('editing') || e.target.closest('.color-dots') || e.target.closest('.fragment-actions')) return;
+  dragState.startY = e.clientY;
+  dragState.timer = setTimeout(() => startDrag(card, e.clientY), 500);
+  dragState.el = card;
+});
+
+listEl.addEventListener('touchstart', (e) => {
+  const card = e.target.closest('.fragment-card');
+  if (!card || card.classList.contains('editing') || e.target.closest('.color-dots') || e.target.closest('.fragment-actions')) return;
+  dragState.startY = e.touches[0].clientY;
+  dragState.timer = setTimeout(() => startDrag(card, e.touches[0].clientY), 500);
+  dragState.el = card;
+}, { passive: true });
+
+document.addEventListener('mousemove', (e) => {
+  if (!dragState.el) return;
+  if (dragState.timer && Math.abs(e.clientY - dragState.startY) > 8) { cancelDrag(); return; }
+  if (dragState.dragging) moveDrag(e.clientY);
+});
+
+document.addEventListener('touchmove', (e) => {
+  if (!dragState.el) return;
+  if (dragState.timer && Math.abs(e.touches[0].clientY - dragState.startY) > 8) { cancelDrag(); return; }
+  if (dragState.dragging) { e.preventDefault(); moveDrag(e.touches[0].clientY); }
+}, { passive: false });
+
+document.addEventListener('mouseup', endDrag);
+document.addEventListener('touchend', endDrag);
+
+function startDrag(card, y) {
+  dragState.dragging = true;
+  dragState.timer = null;
+  const rect = card.getBoundingClientRect();
+  dragState.offsetY = y - rect.top;
+  dragState.height = rect.height;
+  dragState.origPrev = card.previousElementSibling;
+
+  card.classList.add('dragging');
+  card.style.position = 'fixed';
+  card.style.left = rect.left + 'px';
+  card.style.top = rect.top + 'px';
+  card.style.width = rect.width + 'px';
+  card.style.zIndex = '150';
+  card.style.pointerEvents = 'none';
+
+  document.body.style.userSelect = 'none';
+}
+
+function moveDrag(y) {
+  const card = dragState.el;
+  card.style.top = (y - dragState.offsetY) + 'px';
+
+  const siblings = [...listEl.querySelectorAll('.fragment-card:not(.dragging)')];
+  siblings.forEach(s => s.classList.remove('drop-before', 'drop-after'));
+
+  let closest = null, minDist = Infinity;
+  siblings.forEach(s => {
+    const r = s.getBoundingClientRect();
+    const mid = r.top + r.height / 2;
+    const dist = Math.abs(y - mid);
+    if (dist < minDist) { minDist = dist; closest = s; }
+  });
+
+  if (closest) {
+    const r = closest.getBoundingClientRect();
+    closest.classList.add(y < r.top + r.height / 2 ? 'drop-before' : 'drop-after');
+  }
+}
+
+function endDrag() {
+  if (dragState.timer) { cancelDrag(); return; }
+  if (!dragState.dragging) return;
+
+  const card = dragState.el;
+  const target = listEl.querySelector('.drop-before, .drop-after');
+
+  if (target) {
+    if (target.classList.contains('drop-before')) {
+      listEl.insertBefore(card, target);
+    } else {
+      listEl.insertBefore(card, target.nextSibling);
+    }
+    target.classList.remove('drop-before', 'drop-after');
+  }
+
+  card.style.position = '';
+  card.style.left = '';
+  card.style.top = '';
+  card.style.width = '';
+  card.style.zIndex = '';
+  card.style.pointerEvents = '';
+  card.classList.remove('dragging');
+  document.body.style.userSelect = '';
+
+  const ids = [...listEl.querySelectorAll('.fragment-card')].map(c => Number(c.dataset.id));
+  fetch('/api/fragments/reorder', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids })
+  });
+
+  dragState.el = null;
+  dragState.dragging = false;
+}
+
+function cancelDrag() {
+  clearTimeout(dragState.timer);
+  dragState.timer = null;
+  dragState.el = null;
+  dragState.dragging = false;
+  document.body.style.userSelect = '';
+}
+
+// ── 回收站逻辑 ──
+
+const trashBtn = document.getElementById('trashBtn');
+const trashBadge = document.getElementById('trashBadge');
+const trashOverlay = document.getElementById('trashOverlay');
+const trashPanel = document.getElementById('trashPanel');
+const trashClose = document.getElementById('trashClose');
+const trashBody = document.getElementById('trashBody');
+const btnEmptyTrash = document.getElementById('btnEmptyTrash');
+const confirmDialog = document.getElementById('confirmDialog');
+const confirmCancel = document.getElementById('confirmCancel');
+const confirmOk = document.getElementById('confirmOk');
+
+trashBtn.addEventListener('click', openTrashPanel);
+trashOverlay.addEventListener('click', closeTrashPanel);
+trashClose.addEventListener('click', closeTrashPanel);
+btnEmptyTrash.addEventListener('click', () => confirmDialog.classList.add('show'));
+confirmCancel.addEventListener('click', () => confirmDialog.classList.remove('show'));
+confirmOk.addEventListener('click', emptyTrash);
+
+async function loadTrashCount() {
+  try {
+    const res = await fetch('/api/trash');
+    const trash = await res.json();
+    updateTrashBadge(trash.length);
+  } catch {}
+}
+
+function updateTrashBadge(count) {
+  trashBadge.textContent = count;
+  if (count > 0) {
+    trashBadge.classList.add('show');
+  } else {
+    trashBadge.classList.remove('show');
+  }
+}
+
+async function openTrashPanel() {
+  trashOverlay.classList.add('show');
+  trashPanel.classList.add('show');
+  await renderTrash();
+}
+
+function closeTrashPanel() {
+  trashOverlay.classList.remove('show');
+  trashPanel.classList.remove('show');
+}
+
+async function renderTrash() {
+  try {
+    const res = await fetch('/api/trash');
+    const trash = await res.json();
+
+    if (trash.length === 0) {
+      trashBody.innerHTML = `
+        <div class="trash-empty-state">
+          <div class="icon">◇</div>
+          <p>回收站是空的</p>
+        </div>
+      `;
+      btnEmptyTrash.style.display = 'none';
+      updateTrashBadge(0);
+      return;
+    }
+
+    btnEmptyTrash.style.display = '';
+    updateTrashBadge(trash.length);
+
+    trashBody.innerHTML = trash.map(item => {
+      const daysLeft = getDaysLeft(item.deleted_at);
+      return `
+        <div class="trash-item" data-id="${item.id}">
+          <div class="trash-item-content">${escapeHtml(item.content)}</div>
+          <div class="trash-item-footer">
+            <span class="trash-item-expire">${daysLeft} 天后过期</span>
+            <button class="btn-restore" onclick="restoreFragment(${item.id})">恢复</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch {
+    trashBody.innerHTML = '<div class="trash-empty-state"><p>加载失败</p></div>';
+  }
+}
+
+function getDaysLeft(deletedAt) {
+  const deleted = new Date(deletedAt.replace(' ', 'T')).getTime();
+  const elapsed = Date.now() - deleted;
+  const remaining = 3 * 24 * 60 * 60 * 1000 - elapsed;
+  return Math.max(0, Math.ceil(remaining / (24 * 60 * 60 * 1000)));
+}
+
+async function restoreFragment(id) {
+  try {
+    const res = await fetch(`/api/trash/${id}/restore`, { method: 'POST' });
+    if (!res.ok) throw new Error();
+    const fragment = await res.json();
+
+    // 添加到主列表顶部
+    const card = createCard(fragment);
+    const empty = listEl.querySelector('.empty-state');
+    if (empty) empty.remove();
+    listEl.insertBefore(card, listEl.firstChild);
+    updateCount();
+
+    // 刷新回收站
+    await renderTrash();
+    showToast('已恢复');
+  } catch {
+    showToast('恢复失败');
+  }
+}
+
+async function emptyTrash() {
+  confirmDialog.classList.remove('show');
+  try {
+    await fetch('/api/trash', { method: 'DELETE' });
+    updateTrashBadge(0);
+    await renderTrash();
+    showToast('已清空');
+  } catch {
+    showToast('清空失败');
+  }
+}
+</script>
+</body>
+</html>
