@@ -2808,10 +2808,6 @@ async function loadFragments() {
 
 // ── AI 功能 ──
 
-const AI_API_URL = 'https://apihub.agnes-ai.com/v1/chat/completions';
-const AI_API_KEY = 'sk-3YSNEOHc4BFHwBMXIXADrMRIi0am8tPbvYEHYGH6xnzlShYA';
-const AI_MODEL = 'agnes-2.0-flash';
-
 const aiTextEl = document.getElementById('aiText');
 const aiDisplayTitle = document.getElementById('aiDisplayTitle');
 const aiCatToggle = document.getElementById('aiCatToggle');
@@ -2894,25 +2890,15 @@ function updateAiDisplay() {
 }
 
 async function callAi(content, catName) {
-  const prompt = `以下是用户"${catName || '全部'}"分类下的文字记录：\n\n${content}\n\n请根据以上内容：\n1. 用一句话（20字以内）预测文字主人最近在关注什么或想要做什么\n2. 基于这些内容给出1-2条简短建议（每条不超过15字）\n\n格式要求：\n关注：[你的预测]\n建议：[建议1]；[建议2]\n\n总字数控制在100字以内。`;
-
-  const res = await fetch(AI_API_URL, {
+  const res = await fetch('/api/ai', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${AI_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 50,
-      temperature: 0.7
-    })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content, catName })
   });
 
   if (!res.ok) throw new Error('AI API error');
   const data = await res.json();
-  return data.choices?.[0]?.message?.content?.trim() || '';
+  return data.result || '';
 }
 
 async function generateAiForCategory(catId, catName) {
