@@ -1,10 +1,11 @@
-import { getFragments, setFragments, generateId, formatTime } from '../../lib/store.js';
+import { verifyAuth, getFragments, setFragments, generateId, formatTime } from '../../lib/store.js';
 
 export const config = {
   api: { bodyParser: { sizeLimit: '1mb' } }
 };
 
 export default async function handler(req, res) {
+  if (!verifyAuth(req)) { res.status(401).json({ error: '未授权' }); return; }
   const { method } = req;
 
   if (method === 'GET') {

@@ -1,6 +1,7 @@
-import { getFragments, setFragments, getTrash, setTrash, formatTime } from '../../lib/store.js';
+import { verifyAuth, getFragments, setFragments, getTrash, setTrash, formatTime } from '../../lib/store.js';
 
 export default async function handler(req, res) {
+  if (!verifyAuth(req)) { res.status(401).json({ error: '未授权' }); return; }
   const { method } = req;
   const { id } = req.query;
 

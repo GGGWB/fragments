@@ -1756,6 +1756,85 @@
 </div>
 
 <script>
+const AUTH_TOKEN_KEY = 'fragments_auth_token';
+
+function getAuthToken() { return sessionStorage.getItem(AUTH_TOKEN_KEY) || ''; }
+function setAuthToken(t) { sessionStorage.setItem(AUTH_TOKEN_KEY, t); }
+
+async function authFetch(url, opts = {}) {
+  opts.headers = { ...opts.headers, 'X-Auth-Token': getAuthToken() };
+  const res = await fetch(url, opts);
+  if (res.status === 401) { showLogin(); throw new Error('未授权'); }
+  return res;
+}
+
+function showLogin() {
+  let overlay = document.getElementById('loginOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'loginOverlay';
+    overlay.innerHTML = `
+      <div style="position:fixed;inset:0;background:rgba(245,240,232,0.95);z-index:999;display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;">
+          <div style="font-size:1.6rem;letter-spacing:0.3em;color:#2c2416;margin-bottom:2rem;font-weight:300;">碎 片</div>
+          <input id="loginPassword" type="password" placeholder="请输入密码" style="font-family:inherit;font-size:0.85rem;padding:0.6rem 1rem;border:1px solid rgba(168,152,128,0.3);border-radius:4px;background:rgba(255,255,255,0.6);color:#2c2416;outline:none;width:200px;text-align:center;letter-spacing:0.1em;" />
+          <br><br>
+          <button id="loginBtn" style="font-family:inherit;font-size:0.8rem;letter-spacing:0.1em;padding:0.5rem 2rem;background:#8b6914;border:none;color:#f5f0e8;border-radius:4px;cursor:pointer;">进入</button>
+          <div id="loginError" style="margin-top:1rem;font-size:0.75rem;color:#9e3a26;display:none;"></div>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    const btn = document.getElementById('loginBtn');
+    const pwInput = document.getElementById('loginPassword');
+    const doLogin = async () => {
+      const pw = pwInput.value.trim();
+      if (!pw) return;
+      btn.textContent = '...';
+      btn.disabled = true;
+      try {
+        const res = await authFetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          setAuthToken(data.token || 'ok');
+          overlay.remove();
+checkAuthAndInit();
+        } else {
+          document.getElementById('loginError').textContent = '密码错误';
+          document.getElementById('loginError').style.display = '';
+          btn.textContent = '进入';
+          btn.disabled = false;
+        }
+      } catch {
+        document.getElementById('loginError').textContent = '连接失败';
+        document.getElementById('loginError').style.display = '';
+        btn.textContent = '进入';
+        btn.disabled = false;
+      }
+    };
+    btn.addEventListener('click', doLogin);
+    pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    pwInput.focus();
+  }
+}
+
+async function checkAuthAndInit() {
+  try {
+    const res = await authFetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Auth-Token': getAuthToken() },
+      body: JSON.stringify({ password: '' })
+    });
+    if (res.status === 401) { showLogin(); return; }
+    init();
+  } catch {
+    init();
+  }
+}
+
 const input = document.getElementById('input');
 const submitBtn = document.getElementById('submitBtn');
 const listEl = document.getElementById('list');
@@ -1902,7 +1981,7 @@ async function submit() {
   submitBtn.textContent = '...';
 
   try {
-    const res = await fetch('/api/fragments', {
+    const res = await authFetch('/api/fragments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content, category_id: activeCategoryId })
@@ -1993,7 +2072,7 @@ async function openCategoryDropdown(e, fragmentId, btn) {
   if (!drop) return;
 
   try {
-    const res = await fetch('/api/categories');
+    const res = await authFetch('/api/categories');
     allCategories = await res.json();
   } catch {}
 
@@ -2018,7 +2097,7 @@ async function openCategoryDropdown(e, fragmentId, btn) {
 function selectCategory(fragmentId, categoryId) {
   closeAllDropdowns();
 
-  fetch(`/api/fragments/${fragmentId}`, {
+  authFetch(`/api/fragments/${fragmentId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ category_id: categoryId })
@@ -2040,7 +2119,7 @@ async function deleteFragment(id, btn) {
   closeAllDropdowns();
   if (card.classList.contains('editing')) return;
   card.classList.add('removing');
-  await fetch(`/api/fragments/${id}`, { method: 'DELETE' });
+  await authFetch(`/api/fragments/${id}`, { method: 'DELETE' });
   setTimeout(() => {
     card.remove();
     allFragments = allFragments.filter(f => f.id !== id);
@@ -2093,7 +2172,7 @@ async function saveFragment(id, card, textarea) {
   if (!content) { showToast('内容不能为空'); return; }
 
   try {
-    const res = await fetch(`/api/fragments/${id}`, {
+    const res = await authFetch(`/api/fragments/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content })
@@ -2253,7 +2332,7 @@ listEl.addEventListener('click', (e) => {
 
   if (f) f.color = newColor;
 
-  fetch(`/api/fragments/${id}`, {
+  authFetch(`/api/fragments/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ color: newColor })
@@ -2360,7 +2439,7 @@ function endDrag() {
   document.body.style.userSelect = '';
 
   const ids = [...listEl.querySelectorAll('.fragment-card')].map(c => c.dataset.id);
-  fetch('/api/fragments/reorder', {
+  authFetch('/api/fragments/reorder', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ ids })
@@ -2400,7 +2479,7 @@ confirmOk.addEventListener('click', emptyTrash);
 
 async function loadTrashCount() {
   try {
-    const res = await fetch('/api/trash');
+    const res = await authFetch('/api/trash');
     const trash = await res.json();
     updateTrashBadge(trash.length);
   } catch {}
@@ -2428,7 +2507,7 @@ function closeTrashPanel() {
 
 async function renderTrash() {
   try {
-    const res = await fetch('/api/trash');
+    const res = await authFetch('/api/trash');
     const trash = await res.json();
 
     if (trash.length === 0) {
@@ -2475,7 +2554,7 @@ function getDaysLeft(deletedAt) {
 
 async function restoreFragment(id) {
   try {
-    const res = await fetch(`/api/trash/${id}/restore`, { method: 'POST' });
+    const res = await authFetch(`/api/trash/${id}/restore`, { method: 'POST' });
     if (!res.ok) throw new Error();
     const fragment = await res.json();
 
@@ -2499,7 +2578,7 @@ async function restoreFragment(id) {
 
 async function permanentDelete(id) {
   try {
-    await fetch(`/api/trash/${id}`, { method: 'DELETE' });
+    await authFetch(`/api/trash/${id}`, { method: 'DELETE' });
     await renderTrash();
     showToast('已永久删除');
   } catch {
@@ -2510,7 +2589,7 @@ async function permanentDelete(id) {
 async function emptyTrash() {
   confirmDialog.classList.remove('show');
   try {
-    await fetch('/api/trash', { method: 'DELETE' });
+    await authFetch('/api/trash', { method: 'DELETE' });
     updateTrashBadge(0);
     await renderTrash();
     showToast('已清空');
@@ -2557,7 +2636,7 @@ function switchTab(categoryId) {
 
 async function loadCategories() {
   try {
-    const res = await fetch('/api/categories');
+    const res = await authFetch('/api/categories');
     allCategories = await res.json();
     if (activeCategoryId && !allCategories.find(c => c.id === activeCategoryId)) {
       activeCategoryId = '';
@@ -2618,7 +2697,7 @@ btnAddTab.addEventListener('click', () => {
 async function createCategory(name) {
   if (!name) return;
   try {
-    const res = await fetch('/api/categories', {
+    const res = await authFetch('/api/categories', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
@@ -2678,7 +2757,7 @@ async function renameCategory(id, newName, tab, originalName) {
     return;
   }
   try {
-    const res = await fetch(`/api/categories/${id}`, {
+    const res = await authFetch(`/api/categories/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: newName })
@@ -2704,7 +2783,7 @@ async function deleteCategory(id, keepFragments) {
     const url = keepFragments
       ? `/api/categories/${id}?keep=1`
       : `/api/categories/${id}`;
-    const res = await fetch(url, { method: 'DELETE' });
+    const res = await authFetch(url, { method: 'DELETE' });
     if (!res.ok) throw new Error();
     allCategories = allCategories.filter(c => c.id !== id);
     if (activeCategoryId === id) {
@@ -2798,7 +2877,7 @@ deleteCatCancel.addEventListener('click', () => {
 
 async function loadFragments() {
   try {
-    const res = await fetch('/api/fragments');
+    const res = await authFetch('/api/fragments');
     allFragments = await res.json();
     renderList(true);
   } catch (err) {
@@ -2890,7 +2969,7 @@ function updateAiDisplay() {
 }
 
 async function callAi(content, catName) {
-  const res = await fetch('/api/ai', {
+  const res = await authFetch('/api/ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content, catName })

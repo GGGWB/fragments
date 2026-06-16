@@ -1,6 +1,7 @@
-import { getCategories, setCategories, generateId, formatTime } from '../../lib/store.js';
+import { verifyAuth, getCategories, setCategories, generateId, formatTime } from '../../lib/store.js';
 
 export default async function handler(req, res) {
+  if (!verifyAuth(req)) { res.status(401).json({ error: '未授权' }); return; }
   const { method } = req;
 
   if (method === 'GET') {
